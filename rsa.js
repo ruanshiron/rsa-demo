@@ -104,8 +104,6 @@ function privateKey(rsa_public) {
     // m = (p-1) * (q-1);
     let m = (p - 1) * (q - 1)
 
-    console.log("p = " + p + "\nq = " + q + "\nm = " + m)
-
     let xa = 1, ya = 0, xb = 0, yb = 1, temp = m
 
     while (m != 0) {
@@ -125,8 +123,7 @@ function privateKey(rsa_public) {
         xa = xa + temp
     }
 
-    console.log("d = " + xa)
-    return { d: xa, m: temp }
+    return {p, q, d: xa, m: temp }
 
 }
 

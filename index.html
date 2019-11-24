@@ -44,19 +44,24 @@
                         class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                         placeholder="Nay cô cho cả lớp nghỉ" id="input">
                 </div>
-                <div class="w-full p-3">
+                <div style="min-height: 153px" class="w-full p-3">
                     <label class="inline-block uppercase tracking-wide text-gray-500 text-xl font-bold mb-2">
                         result
                     </label>
-                    <span id="rsa_d"
-                        class="inline-block bg-gray-200 rounded-full tracking-wide px-3 py-1 text-sm font-semibold text-gray-700 ml-4 mr-2 mb-1">d
-                        = 12</span>
-                    <span id="rsa_m"
-                        class="inline-block bg-gray-200 rounded-full tracking-wide px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-1">m
-                        = 12</span>
+
                     <input
                         class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                         placeholder="Nay cô cho cả lớp nghỉ" id="result">
+
+                    <span id="rsa_d"
+                        class="inline-block bg-gray-200 rounded-full tracking-wide px-3 py-1 text-sm font-semibold text-gray-700 mb-1">d
+                        = 12</span>
+                    <span id="rsa_p"
+                        class="inline-block bg-gray-200 rounded-full tracking-wide px-3 py-1 text-sm font-semibold text-gray-700 mb-1">m
+                        = 12</span>
+                    <span id="rsa_q"
+                        class="inline-block bg-gray-200 rounded-full tracking-wide px-3 py-1 text-sm font-semibold text-gray-700 mb-1">m
+                        = 12</span>
                 </div>
 
 
@@ -83,16 +88,18 @@
     <script type="text/javascript" src="rsa.js"></script>
     <script type="text/javascript" src="jquery-3.4.1.min.js"></script>
     <script>
-        $("#rsa_m").hide()
+        $("#rsa_q").hide()
+        $("#rsa_p").hide()
         $("#rsa_d").hide()
         $("#encr").click(function () {
-            $("#rsa_m").hide()
+            $("#rsa_q").hide()
             $("#rsa_d").hide()
+            $("#rsa_p").hide()
             let rsa = {
                 n: Number($("#rsa_n").val()),
                 e: Number($("#rsa_e").val())
             }
-            let raw = $("#input").val()
+            let raw = $("#input").val().toLowerCase()
             let cipherText = encode(raw, rsa)
             $("#result").val(cipherText)
         })
@@ -105,11 +112,15 @@
             let cipher = $("#input").val()
             let result = cryptanalysis(cipher, rsa)
             $("#result").val(result.raw)
-            
-            $("#rsa_m").text("m = " + result.rsa.m)
-            $("#rsa_d").text("d = " + result.rsa.d)
-            $("#rsa_m").show()
+            console.log(result.rsa);
+
+            $("#rsa_q").text("q=" + result.rsa.m)
+            $("#rsa_d").text("d=" + result.rsa.d)
+            $("#rsa_p").text("p=" + result.rsa.m)
+            $("#rsa_q").show()
             $("#rsa_d").show()
+            
+            $("#rsa_p").show()
         })
     </script>
 </body>
