@@ -1,6 +1,17 @@
-String.prototype.toArray = function () {
-    return this.split(" ");
+String.prototype.toArray = function (rsa_n) {
+    let result = []    
+
+    this.trim().split("").forEach(c => {
+        if (c == " " || result[result.length - 1] == " " || result.length == 0) 
+            result.push(c)
+        else if ((result[result.length-1]+c).toNumber() < rsa_n)
+            result[result.length - 1] = result[result.length - 1] + c
+        else result.push(c)
+    })
+
+    return result
 }
+
 
 String.prototype.toNumber = function (n) {
     if (n == null) n = 27
@@ -23,7 +34,7 @@ String.prototype.toNumber = function (n) {
 Number.prototype.toWord = function (n) {
     let number = new Number(this)
 
-    
+
     if (n == null) n = 27
     let word = ""
     let temp
@@ -31,7 +42,7 @@ Number.prototype.toWord = function (n) {
     while (number > 0) {
         temp = number % n
         word += String.fromCharCode(temp + 96)
-        number = Math.floor(number/27)
+        number = Math.floor(number / 27)
     }
 
     return word.split("").reverse().join("")
@@ -48,30 +59,39 @@ function powMod(base, exp, mod) {
 }
 
 function encode(raw, rsa_public) {
-    let rawSplit = raw.toArray()
+    let rawSplit = raw.toArray(rsa_public.n)
     let cipherSplit = []
-    rawSplit.forEach(word => {        
-        let temp = Number(powMod(BigInt(word.toNumber()), BigInt(rsa_public.e), BigInt(rsa_public.n))).toWord()
-        cipherSplit.push(temp)
+    rawSplit.forEach(word => {
+        if (word != " ") {
+            let temp = Number(powMod(BigInt(word.toNumber()), BigInt(rsa_public.e), BigInt(rsa_public.n))).toWord()
+            cipherSplit.push(temp)
+        } else {
+            cipherSplit.push(word)
+        }
+
     });
-    return cipherSplit.join(" ")
+    return cipherSplit.join("")
 }
 
 function decode(cipher, rsa_private) {
-    let cipherSplit = cipher.toArray()
+    let cipherSplit = cipher.toArray(rsa_private.n)
     let rawSplit = []
     cipherSplit.forEach(word => {
-        let temp = Number(powMod(BigInt(word.toNumber()), BigInt(rsa_private.d), BigInt(rsa_private.n))).toWord()
-        rawSplit.push(temp)
+        if (word != " ") {
+            let temp = Number(powMod(BigInt(word.toNumber()), BigInt(rsa_private.d), BigInt(rsa_private.n))).toWord()
+            rawSplit.push(temp)
+        } else {
+            rawSplit.push(word)
+        }
     });
-    return rawSplit.join(" ")
+    return rawSplit.join("")
 }
 
 function privateKey(rsa_public) {
     // Tìm p & q
-    let n = rsa_public.n  
-    let e = rsa_public.e  
-    let sqrtN = Math.floor(Math.sqrt(n))    
+    let n = rsa_public.n
+    let e = rsa_public.e
+    let sqrtN = Math.floor(Math.sqrt(n))
     let p = sqrtN, q
 
     while (p != 1) {
@@ -79,17 +99,17 @@ function privateKey(rsa_public) {
         p = p - 1
     }
 
-    q = Math.floor(n/p)
+    q = Math.floor(n / p)
 
     // m = (p-1) * (q-1);
-    let m = (p-1)*(q-1)
+    let m = (p - 1) * (q - 1)
 
-    console.log("p = " + p +"\nq = " + q + "\nm = " + m)
+    console.log("p = " + p + "\nq = " + q + "\nm = " + m)
 
     let xa = 1, ya = 0, xb = 0, yb = 1, temp = m
-    
+
     while (m != 0) {
-        let z = Math.floor(e / m)        
+        let z = Math.floor(e / m)
         let r = e % m
         e = m;
         m = r;
@@ -106,27 +126,32 @@ function privateKey(rsa_public) {
     }
 
     console.log("d = " + xa)
-    return {d:xa, m:temp}
-    
+    return { d: xa, m: temp }
+
 }
 
 function cryptanalysis(cipher, rsa) {
     rsa = {
         ...rsa,
         ...privateKey(rsa)
-    } 
-    return {raw:decode(cipher, rsa), rsa}
+    }
+    return { raw: decode(cipher, rsa), rsa }
 }
 
 const rsa_public = {
-    e: 65537,
-    n: 3233633483
+    e: 17,
+    n: 3233
 }
 
 const rsa_private = {
-    n: 3233633483,
-    d: 2854695593
+    n: 3233,
+    d: 2753
 }
+
+
+
+
+
 
 
 
