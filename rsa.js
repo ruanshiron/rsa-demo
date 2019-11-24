@@ -1,13 +1,109 @@
-String.prototype.toArray = function (rsa_n) {
-    let result = []    
+String.prototype.encode = function (rsa) {
+    let n = rsa.n, e=rsa.e, result = ""
+    let M = this.toNumber()
+    let mBinary = M.toString(2)
 
-    this.trim().split("").forEach(c => {
-        if (c == " " || result[result.length - 1] == " " || result.length == 0) 
-            result.push(c)
-        else if ((result[result.length-1]+c).toNumber() < rsa_n)
-            result[result.length - 1] = result[result.length - 1] + c
-        else result.push(c)
-    })
+    let bits = Math.floor(Math.log2(n-1))
+    
+    if (mBinary.length <= bits) {
+        let C = Number(powMod(BigInt(M), BigInt(e), BigInt(n)))
+        result = C.toWord()
+    } else {
+        let count = (mBinary.length % bits == 0) ? Math.floor(mBinary.length / bits) : Math.floor(mBinary.length / bits + 1)
+
+        let segment = []
+
+        if (mBinary.length % bits == 0) {
+            for (let i = 0; i < count; i++) {
+                segment[i] = mBinary.substring(i*bits, (i+1)*bits)
+            }
+        } else {
+            segment[0] = mBinary.substring(0, mBinary.length % bits)
+            for (let i = 0; i < count; i++) {
+                segment[i] = mBinary.substring(mBinary.length % bits + (i - 1) * bits, mBinary.length % bits + i * bits)
+            }
+        }
+        
+
+        let listDecimal = [], listBinary = [],C = [] 
+        listDecimal.length = count
+        listBinary.length = count
+        C.length = count
+        
+
+        for (let i = 0; i < count; i++) {
+            listDecimal[i] = parseInt(segment[i], 2)            
+            C[i] = Number(powMod(BigInt(listDecimal[i]), BigInt(e), BigInt(n)))
+            listBinary[i] = C[i].toString(2)
+            if (listBinary[i].length < bits + 1) {
+                let repeat = []
+                repeat.length = bits + 1 - listBinary[i].length
+                repeat.fill(0)
+                listBinary[i] = repeat.join("") + listBinary[i]
+            }
+            
+            result += listBinary[i]
+            
+        }
+
+        let resultDecimal = parseInt(result, 2)
+        result = resultDecimal.toWord()
+    }
+    
+    return result
+}
+
+String.prototype.decode = function (rsa) {
+    let n = rsa.n, d = rsa.d
+    let result = "", C = this.toNumber()
+    let cBinary = C.toString(2)
+
+    let bits = Math.floor(Math.log2(n-1))
+    
+    if (cBinary.length <= bits) {
+        let M = Number(powMod(BigInt(C), BigInt(d), BigInt(n)))
+
+        result = M.toWord()
+    } else {
+        let count = (cBinary.length % (bits + 1) == 0) ? Math.floor(cBinary.length / (bits + 1)) : Math.floor(cBinary.length / (bits + 1) + 1)
+        
+        let segment = []
+        
+
+        if (cBinary.length % (bits + 1) == 0) {
+            for (let i = 0; i < count; i++) {
+                segment[i] = cBinary.substring(i*(bits + 1), (i+1)*(bits + 1))
+            }
+        } else {
+            segment[0] = cBinary.substring(0, cBinary.length % (bits + 1))
+            for (let i = 0; i < count; i++) {
+                segment[i] = cBinary.substring(cBinary.length % (bits + 1) + (i - 1) * (bits + 1), cBinary.length % (bits + 1) + i * (bits + 1))
+            }
+        }
+
+        let listDecimal = [], listBinary = [],M = [] 
+        listDecimal.length = count
+        listBinary.length = count
+        M.length = count
+
+        for (let i = 0; i < count; i++) {
+            listDecimal[i] = parseInt(segment[i], 2)            
+            M[i] = Number(powMod(BigInt(listDecimal[i]), BigInt(d), BigInt(n)))
+            listBinary[i] = M[i].toString(2)
+            if (listBinary[i].length < bits) {
+                let repeat = []
+                repeat.length = bits - listBinary[i].length
+                repeat.fill(0)
+                listBinary[i] = repeat.join("") + listBinary[i]
+            }
+            
+            result += listBinary[i]
+        }
+
+        let resultDecimal = parseInt(result, 2)
+        result = resultDecimal.toWord()
+    
+    }
 
     return result
 }
@@ -59,32 +155,21 @@ function powMod(base, exp, mod) {
 }
 
 function encode(raw, rsa_public) {
-    let rawSplit = raw.toArray(rsa_public.n)
+    let rawSplit = raw.split(" ")
     let cipherSplit = []
     rawSplit.forEach(word => {
-        if (word != " ") {
-            let temp = Number(powMod(BigInt(word.toNumber()), BigInt(rsa_public.e), BigInt(rsa_public.n))).toWord()
-            cipherSplit.push(temp)
-        } else {
-            cipherSplit.push(word)
-        }
-
+        cipherSplit.push(word.encode(rsa_public))
     });
-    return cipherSplit.join("")
+    return cipherSplit.join(" ")
 }
 
 function decode(cipher, rsa_private) {
-    let cipherSplit = cipher.toArray(rsa_private.n)
+    let cipherSplit = cipher.split(" ")
     let rawSplit = []
     cipherSplit.forEach(word => {
-        if (word != " ") {
-            let temp = Number(powMod(BigInt(word.toNumber()), BigInt(rsa_private.d), BigInt(rsa_private.n))).toWord()
-            rawSplit.push(temp)
-        } else {
-            rawSplit.push(word)
-        }
+        rawSplit.push(word.decode(rsa_private))
     });
-    return rawSplit.join("")
+    return rawSplit.join(" ")
 }
 
 function privateKey(rsa_public) {
@@ -145,6 +230,8 @@ const rsa_private = {
     d: 2753
 }
 
+console.log(encode("ngoc", rsa_public))
+console.log(decode("uyrwt", rsa_private))
 
 
 
