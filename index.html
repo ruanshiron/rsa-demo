@@ -25,6 +25,7 @@
                         <input
                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                             type="text" value="3233633483" id="rsa_n">
+                            <p class="text-red-500 text-xs italic">Nhập N là tích hai số nguyên tố</p>
                     </div>
                     <div class="w-full md:w-1/2 p-3 mb-6 md:mb-0">
                         <label class="block uppercase tracking-wide text-gray-500  text-lg font-bold mb-2">
@@ -33,7 +34,8 @@
                         <input
                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                             type="text" value="65537" id="rsa_e">
-                    </div>
+                            
+                        </div>
                 </div>
 
                 <div class="w-full p-3">
@@ -43,7 +45,7 @@
                     <div class="w-full flex flex-row">
                         <input
                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                            placeholder="Nay cô cho cả lớp nghỉ" id="input">
+                            placeholder="nay co cho nghi hoc" id="input">
                     </div>
 
                 </div>
@@ -54,14 +56,14 @@
                     <div class="w-full flex flex-row">
                         <input
                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                            placeholder="Nay cô cho cả lớp nghỉ" id="result">
+                            placeholder="khong co chuyen day dau" id="result">
                         <button style="max-width: 68px;" id="copy"
                             class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 mb-3 ml-2 border-b-4 border-blue-700 hover:border-blue-500 rounded ">
                             copy
                         </button>
                     </div>
                     <span id="rsa_d"
-                        class="inline-block bg-gray-200 rounded-full tracking-wide px-3 py-1 text-sm font-semibold text-gray-700 mb-1">d
+                        class="flex bg-gray-200 rounded-full tracking-wide px-3 py-1 text-sm font-semibold text-gray-700 mb-1">d
                         = 12</span>
                     <span id="rsa_p"
                         class="inline-block bg-gray-200 rounded-full tracking-wide px-3 py-1 text-sm font-semibold text-gray-700 mb-1">m
@@ -122,7 +124,7 @@
             console.log(result.rsa);
 
             $("#rsa_q").text("q=" + result.rsa.q)
-            $("#rsa_d").text("d=" + result.rsa.d)
+            $("#rsa_d").text("PrivateKey d=" + result.rsa.d)
             $("#rsa_p").text("p=" + result.rsa.p)
             $("#rsa_q").show()
             $("#rsa_d").show()
