@@ -1,5 +1,5 @@
-import java.math.BigInteger;
-import java.util.Scanner;
+import java.math.*;
+import java.util.*;
 
 public class RSA {
 
@@ -33,7 +33,7 @@ public class RSA {
 				break;
 			}
 		} while (choose != 0);
-		System.out.println(wordToNumber("nghieng"));
+		System.out.println("Bye. See you again.");
 		sc.close();
 	}
 
@@ -100,17 +100,115 @@ public class RSA {
 
 	// Mã hóa một word
 	static String encode(String word, BigInteger e, BigInteger n) {
+		String result = new String();
 		BigInteger M = wordToNumber(word); // Đổi word bản rõ sang số hệ 10
-		BigInteger C = powMod(M, e, n); // Tính C = M^e mod n
-		String result = numberToWord(C); // Đổi số hệ 10 sang word bản mã
+		String mBinary = decimalToBinary(M); // Đổi số hệ 10 sang binary
+
+		// Tính số bits mỗi đoạn có thể mã hóa bits = log2(n)
+		int bits = (int) (log(n.subtract(BigInteger.ONE)) / log(new BigInteger("2")));
+
+		if (mBinary.length() <= bits) {
+			// Độ dài word bản rõ đủ để mã hóa bởi n
+			BigInteger C = powMod(M, e, n); // Tính C = M^e mod n
+			result = numberToWord(C); // Đổi số hệ 10 sang word bản mã
+		} else {
+			// Độ dài word bản rõ dài quá n, phải cắt thành các đoạn
+			// Tính số phân đoạn count
+			int count = (mBinary.length() % bits == 0) ? mBinary.length() / bits : mBinary.length() / bits + 1;
+
+			// Cắt từng phân đoạn
+			String[] segment = new String[count];
+			if (mBinary.length() % bits == 0) {
+				for (int i = 0; i < count; i++) {
+					segment[i] = mBinary.substring(i * bits, (i + 1) * bits);
+				}
+			} else {
+				segment[0] = mBinary.substring(0, mBinary.length() % bits);
+				for (int i = 1; i < count; i++) {
+					segment[i] = mBinary.substring(mBinary.length() % bits + (i - 1) * bits,
+							mBinary.length() % bits + i * bits);
+				}
+			}
+
+			// Mã hóa từng phân đoạn
+			BigInteger[] listDecimal = new BigInteger[count];
+			String[] listBinary = new String[count];
+			BigInteger[] C = new BigInteger[count];
+			for (int i = 0; i < count; i++) {
+				listDecimal[i] = binarytoDecimal(segment[i]); // Chuyển các phân đoạn từ binary sang số hệ 10
+				C[i] = powMod(listDecimal[i], e, n); // Tính C[i] = listDecimal[i]^e mod n
+				listBinary[i] = decimalToBinary(C[i]); // Chuyển các phân đoạn đã mã hóa từ số hệ 10 sang binary
+				if (listBinary[i].length() < bits + 1) {
+					// Nếu số bits các phân đoạn không bằng bits + 1
+					char[] repeat = new char[bits + 1 - listBinary[i].length()];
+					Arrays.fill(repeat, '0');
+					// Thêm các số 0 đằng trước cho đủ số bits
+					listBinary[i] = new String(repeat) + listBinary[i];
+				}
+				result += listBinary[i]; // Gộp các phân đoạn binary lại
+			}
+
+			BigInteger resultDecimal = binarytoDecimal(result); // Đổi result từ binary sang số hệ 10
+			result = numberToWord(resultDecimal); // Đổi số hệ 10 sang word bản mã
+		}
 		return result;
 	}
 
 	// Giải mã một word
 	static String decode(String word, BigInteger d, BigInteger n) {
+		String result = new String();
 		BigInteger C = wordToNumber(word); // Đổi word bản mã sang số hệ 10
-		BigInteger M = powMod(C, d, n); // Tính M = C^d mod n
-		String result = numberToWord(M); // Đổi số hệ 10 sang word bản rõ
+		String cBinary = decimalToBinary(C); // Đổi số hệ 10 sang binary
+
+		// Tính số bits mỗi đoạn có thể biểu diễn
+		// bits = log2(n)
+		int bits = (int) (log(n.subtract(BigInteger.ONE)) / log(new BigInteger("2")));
+
+		if (cBinary.length() <= bits) {
+			// Độ dài word bản mã đủ để giải mã bởi n
+			BigInteger M = powMod(C, d, n); // Tính M = C^d mod n
+			result = numberToWord(M); // Đổi số hệ 10 sang word bản rõ
+		} else {
+			// Độ dài word bản mã dài quá n, phải cắt thành các đoạn
+			// Tính số phân đoạn count
+			int count = (cBinary.length() % (bits + 1) == 0) ? cBinary.length() / (bits + 1)
+					: cBinary.length() / (bits + 1) + 1;
+
+			// Cắt từng phân đoạn
+			String[] segment = new String[count];
+			if (cBinary.length() % (bits + 1) == 0) {
+				for (int i = 0; i < count; i++) {
+					segment[i] = cBinary.substring(i * (bits + 1), (i + 1) * (bits + 1));
+				}
+			} else {
+				segment[0] = cBinary.substring(0, cBinary.length() % (bits + 1));
+				for (int i = 1; i < count; i++) {
+					segment[i] = cBinary.substring(cBinary.length() % (bits + 1) + (i - 1) * (bits + 1),
+							cBinary.length() % (bits + 1) + i * (bits + 1));
+				}
+			}
+
+			// Giải mã từng phân đoạn
+			BigInteger[] listDecimal = new BigInteger[count];
+			String[] listBinary = new String[count];
+			BigInteger[] M = new BigInteger[count];
+			for (int i = 0; i < count; i++) {
+				listDecimal[i] = binarytoDecimal(segment[i]); // Chuyển các phân đoạn từ binary sang số hệ 10
+				M[i] = powMod(listDecimal[i], d, n); // Tính M[i] = listDecimal[i]^d mod n
+				listBinary[i] = decimalToBinary(M[i]); // Chuyển các phân đoạn đã giải mã từ số hệ 10 sang binary
+				if (listBinary[i].length() < bits) {
+					// Nếu số bits các phân đoạn không bằng bits
+					char[] repeat = new char[bits - listBinary[i].length()];
+					Arrays.fill(repeat, '0');
+					// Thêm các số 0 đằng trước cho đủ số bits
+					listBinary[i] = new String(repeat) + listBinary[i];
+				}
+				result += listBinary[i]; // Gộp các phân đoạn binary lại
+			}
+
+			BigInteger resultDecimal = binarytoDecimal(result); // Đổi result từ binary sang số hệ 10
+			result = numberToWord(resultDecimal); // Đổi số hệ 10 sang word bản rõ
+		}
 		return result;
 	}
 
@@ -147,7 +245,7 @@ public class RSA {
 		while (m.equals(BigInteger.ZERO) == false) {
 			BigInteger z = e.divide(m);
 			BigInteger r = e.mod(m);
-			e = m; // m = (p-1) * (q-1)
+			e = m;
 			m = r;
 			BigInteger xr = xa.subtract(z.multiply(xb));
 			BigInteger yr = ya.subtract(z.multiply(yb));
@@ -206,6 +304,18 @@ public class RSA {
 		return new String(result.reverse());
 	}
 
+	// Đổi số nhị phân sang số hệ 10
+	static BigInteger binarytoDecimal(String binary) {
+		BigInteger result = BigInteger.ZERO;
+		BigInteger base = BigInteger.ONE;
+		for (int i = binary.length() - 1; i >= 0; i--) {
+			if (binary.charAt(i) == '1')
+				result = result.add(base);
+			base = base.multiply(new BigInteger("2"));
+		}
+		return result;
+	}
+
 	// Đổi số hệ 10 sang số nhị phân
 	static String decimalToBinary(BigInteger decimal) {
 		String word = new String();
@@ -230,6 +340,17 @@ public class RSA {
 			}
 		}
 		return a.subtract(BigInteger.ONE);
+	}
+
+	// Tính logarit của một số BigInteger
+	static double log(BigInteger val) {
+		if (val.signum() < 1)
+			return val.signum() < 0 ? Double.NaN : Double.NEGATIVE_INFINITY;
+		int blex = val.bitLength() - 977;
+		if (blex > 0)
+			val = val.shiftRight(blex);
+		double res = Math.log(val.doubleValue());
+		return blex > 0 ? res + blex * Math.log(2) : res;
 	}
 
 }
