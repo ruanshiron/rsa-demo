@@ -14,7 +14,7 @@ String.prototype.encode = function (rsa) {
     let l_mBinary = BigInt(mBinary.length)
     
     if (l_mBinary <= bits) {
-        let C = Number(powMod(BigInt(M), BigInt(e), BigInt(n)))
+        let C = powMod(M, e, n)
         result = C.toWord()
     } else {
         let count = (l_mBinary % bits == 0n) ? (l_mBinary / bits) : (l_mBinary / bits + 1n)
