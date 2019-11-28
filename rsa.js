@@ -2,7 +2,7 @@ BigInt.prototype.log2 = function () {
     return (this  > 1n) ? (1n + (this/2n).log2()) : 0n
 }
 
-String.prototype.encode = function (rsa) {
+String.prototype.encode = function (rsa) {    
     let n = BigInt(rsa.n), e = BigInt(rsa.e), result = ""
     let M = this.toBigInt()
     let mBinary = M.toString(2)
@@ -14,8 +14,10 @@ String.prototype.encode = function (rsa) {
     let l_mBinary = BigInt(mBinary.length)
     
     if (l_mBinary <= bits) {
-        let C = powMod(M, e, n)
-        result = C.toWord()
+        let C = powMod(M, e, n)        
+        console.log(C);
+        
+        result = C.toWord()        
     } else {
         let count = (l_mBinary % bits == 0n) ? (l_mBinary / bits) : (l_mBinary / bits + 1n)
 
@@ -23,7 +25,7 @@ String.prototype.encode = function (rsa) {
 
         if (l_mBinary % bits == 0n) {
             for (let i = 0n; i < count; i++) {
-                segment[i] = mBinary.substring(i*bits, (i+1)*bits)
+                segment[i] = mBinary.substring(Number(i*bits), Number((i+1n)*bits))
             }
         } else {
             segment[0] = mBinary.substring(0, Number(l_mBinary % bits))
@@ -126,17 +128,21 @@ String.prototype.decode = function (rsa) {
 }
 
 String.prototype.toBigInt = function (n) {
-    if (n==null) n = 27n
+    if (n==null) n = 94n
     n = BigInt(n)
 
     let l = BigInt(this.length - 1)
     let result = 0n
     for (let i = 0n; i < BigInt(this.length); i++) {
         const c = this.charAt(Number(i))
-
+    
         let temp = n
         temp = temp ** l
-        temp = temp * (BigInt(c.charCodeAt(0)) - 96n)
+
+        if (c == "~") 
+            temp = 0n
+        else 
+            temp = temp * (BigInt(c.charCodeAt(0)) - 32n)
         result = result + temp
         l--        
     }
@@ -147,14 +153,16 @@ String.prototype.toBigInt = function (n) {
 BigInt.prototype.toWord = function (n) {
     let number = BigInt(this)
 
-    if (n==null) n = 27n 
+    if (n==null) n = 94n 
 
     let word = ""
     let temp 
 
     while (number > 0) {
-        temp = number%n
-        word += String.fromCharCode(Number(temp) + 96)
+        temp = number%n + 32n
+        if (temp == 32n) 
+            temp = 126n;
+        word += String.fromCharCode(Number(temp))
         number = number/n
     }
 
@@ -174,8 +182,10 @@ function powMod(base, exp, mod) {
 function encode(raw, rsa_public) {
     let rawSplit = raw.split(" ")
     let cipherSplit = []
-    rawSplit.forEach(word => {
+    rawSplit.forEach(word => {        
+        word = encodeURI(word)        
         cipherSplit.push(word.encode(rsa_public))
+        
     });
     return cipherSplit.join(" ")
 }
@@ -184,7 +194,7 @@ function decode(cipher, rsa_private) {
     let cipherSplit = cipher.split(" ")
     let rawSplit = []
     cipherSplit.forEach(word => {
-        rawSplit.push(word.decode(rsa_private))
+        rawSplit.push(decodeURI(word.decode(rsa_private)))
     });
     return rawSplit.join(" ")
 }
@@ -247,8 +257,10 @@ const rsa_private = {
     d: 2753
 }
 
-console.log(encode("nguyenvietngocquang",rsa_public));
-console.log(cryptanalysis("dmhssjxcicbfwx`uzzygqiy", rsa_public));
+console.log(cryptanalysis(encode("Nguyễn, QuangNgọc Thế Vinh", rsa_public), rsa_public));
+
+
+
 
 
 

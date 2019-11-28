@@ -108,7 +108,7 @@
                 n: Number($("#rsa_n").val()),
                 e: Number($("#rsa_e").val())
             }
-            let raw = $("#input").val().toLowerCase()
+            let raw = $("#input").val()
             let cipherText = encode(raw, rsa)
             $("#result").val(cipherText)
         })

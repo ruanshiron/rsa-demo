@@ -1,5 +1,5 @@
-import java.math.*;
 import java.util.*;
+import java.math.*;
 
 public class RSA {
 
@@ -277,28 +277,36 @@ public class RSA {
 		return y;
 	}
 
-	// Đổi word (hệ 27) sang số hệ 10
+	// Đổi word (hệ 94) sang số hệ 10
 	static BigInteger wordToNumber(String word) {
 		int length = word.length() - 1;
 		BigInteger result = BigInteger.ZERO;
 		for (int i = 0; i < word.length(); i++) {
-			BigInteger temp = new BigInteger("27");
-			temp = temp.pow(length); // 27 ^ length
-			temp = temp.multiply(new BigInteger(Integer.toString((int) word.charAt(i) - 96)));
+			BigInteger temp = new BigInteger("94");
+			temp = temp.pow(length); // 94 ^ length
+			// Nếu ký tự là dấu ~ (số 126 trong ASCII)
+			if ((int) word.charAt(i) == 126)
+				temp = BigInteger.ZERO;
+			else
+				temp = temp.multiply(new BigInteger(Integer.toString((int) word.charAt(i) - 32)));
 			result = result.add(temp);
 			length--;
 		}
 		return result;
 	}
 
-	// Đổi số hệ 10 sang word (hệ 27)
+	// Đổi số hệ 10 sang word (hệ 94)
 	static String numberToWord(BigInteger number) {
 		String word = new String();
 		long temp;
 		while (number.compareTo(BigInteger.ZERO) > 0) {
-			temp = number.mod(new BigInteger("27")).intValue() + 96;
+			temp = number.mod(new BigInteger("94")).intValue() + 32;
+			// Nếu temp = 32 hay mod = 0 (32 là dấu cách space trong ASCII)
+			// Thì chuyển thành dấu ~
+			if (temp == 32)
+				temp = 126;
 			word += (char) temp;
-			number = number.divide(new BigInteger("27"));
+			number = number.divide(new BigInteger("94"));
 		}
 		StringBuilder result = new StringBuilder(word);
 		return new String(result.reverse());
